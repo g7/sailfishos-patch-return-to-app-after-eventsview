@@ -1,0 +1,8 @@
+{
+	"name": "Return to app from the events view",
+	"description": "This patch re-focuses the previously opened application when returning to the events view. 'Quick Events access' must be enabled.",
+	"category": "homescreen",
+	"infos": {
+		"maintainer": "Eugenio Paolantonio"
+	}
+}

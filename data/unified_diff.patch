@@ -1,0 +1,74 @@
+diff -Naur lipstick-jolla-home-qt5/compositor.qml /usr/share/lipstick-jolla-home-qt5/compositor.qml
+--- a/usr/share/lipstick-jolla-home-qt5/compositor.qml	2000-01-01 01:00:00.000000000 +0100
++++ b/usr/share/lipstick-jolla-home-qt5/compositor.qml	2015-09-08 12:58:28.390933276 +0200
+@@ -524,6 +524,7 @@
+                     root._homeLayerOnPeek = homeLayerItem.currentItem
+                     root.peekGestureStarted(root._peekDirection)
+                     if (peekFilter.leftActive && Desktop.settings.left_peek_to_events) {
++                        switcherLayer.queuedWindow = topmostWindowId
+                         homeLayerItem.setCurrentItem(homeLayerItem.events, !childrenOpaque, root._peekDirection)
+                     } else {
+                         homeLayerItem.setCurrentItem(homeLayerItem.switcher, !childrenOpaque, root._peekDirection)
+diff -Naur lipstick-jolla-home-qt5/layers/SwitcherLayer.qml /usr/share/lipstick-jolla-home-qt5/layers/SwitcherLayer.qml
+--- a/usr/share/lipstick-jolla-home-qt5/layers/SwitcherLayer.qml	2015-09-04 21:33:22.000000000 +0200
++++ b/usr/share/lipstick-jolla-home-qt5/layers/SwitcherLayer.qml	2015-09-08 12:49:18.674924433 +0200
+@@ -20,4 +20,17 @@
+         id: overlay
+         anchors.fill: parent
+     }
++
++    property int queuedWindow: 0
++    onActiveChanged: {
++       	/* Show queued window */  
++       	if (active == true && queuedWindow > 0) { // FIXME: lousy check
++            var windowItem = desktop.switcher.getItemForWid(queuedWindow)
++            if (windowItem != null) {
++                windowItem.open()
++            }
++            queuedWindow = 0
++        }
++    }  
++
+ }
+diff -Naur lipstick-jolla-home-qt5/switcher/SwitcherItem.qml /usr/share/lipstick-jolla-home-qt5/switcher/SwitcherItem.qml
+--- a/usr/share/lipstick-jolla-home-qt5/switcher/SwitcherItem.qml	2015-09-04 21:33:22.000000000 +0200
++++ b/usr/share/lipstick-jolla-home-qt5/switcher/SwitcherItem.qml	2015-09-08 13:00:08.445311929 +0200
+@@ -123,6 +123,14 @@
+         }
+     }
+ 
++    function open() {
++        /*
++         * Opens the window.
++        */
++
++        clicked()
++    }
++
+     function close() {
+         _persistCloseApplicationEnabled |= switcherRoot.closeApplicationEnabled
+         closeAnimation.start()
+diff -Naur lipstick-jolla-home-qt5/switcher/Switcher.qml /usr/share/lipstick-jolla-home-qt5/switcher/Switcher.qml
+--- a/usr/share/lipstick-jolla-home-qt5/switcher/Switcher.qml	2015-09-04 21:33:22.000000000 +0200
++++ b/usr/share/lipstick-jolla-home-qt5/switcher/Switcher.qml	2015-09-08 12:46:03.152727171 +0200
+@@ -95,6 +95,20 @@
+         return false
+     }
+ 
++    function getItemForWid(wid) {
++        /*
++         * Gets an item given a wid.
++        */
++
++        for (var i = 0; i < repeater.count; ++i) {
++            var item = repeater.itemAt(i)
++            if (item.windowId == wid) {
++                return item
++            }
++        }
++        return null
++    }
++
+     property bool closePending
+     property bool housekeepingMenuActive: housekeepingMenu.active
+     onHousekeepingMenuActiveChanged: {
