@@ -14,7 +14,7 @@ Name:       sailfishos-patch-return-to-app-after-eventsview
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    Return to app from the events view
 Version:    1.1.9.28
-Release:    1
+Release:    2
 Group:      Applications/Productivity
 License:    GPLv2+
 BuildArch:  noarch
